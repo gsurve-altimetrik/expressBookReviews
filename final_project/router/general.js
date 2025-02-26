@@ -8,7 +8,7 @@ const public_users = express.Router();
 public_users.post("/register", (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
-
+  console.log(username, password);
   // Check if both username and password are provided
   if (username && password) {
     // Check if the user does not already exist
@@ -27,14 +27,27 @@ public_users.post("/register", (req, res) => {
 
 // Get the book list available in the shop
 public_users.get('/', function (req, res) {
-  JSON.stringify(users, null, 4)
-  return res.status(300).json({ message: "List of Users" });
+  res.send(JSON.stringify(books, null, 4));
+  return res.status(300).json({ message: "List of Books" });
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn', function (req, res) {
-  const isbn = req.books.isbn;
-  res.send(books[isbn]);
+  const isbn = req.params.isbn;
+  const booksData = Object.keys(books);
+  let isbinBooks = [];
+  if (booksData.length > 0) {
+    booksData.filter((item) => {
+      if (books[item].isbn == isbn) {
+        isbinBooks.push(books[item]);
+      }
+    })
+  }
+  if (isbinBooks.length > 0) {
+    res.send(JSON.stringify(isbinBooks, null, 4))
+  } else {
+    res.send("Unable to find Books with ISBN");
+  }
   return res.status(300).json({ message: "Book With ISBN" });
 });
 
@@ -42,9 +55,14 @@ public_users.get('/isbn/:isbn', function (req, res) {
 public_users.get('/author/:author', function (req, res) {
   const author = req.params.author;
   const booksData = Object.keys(books);
-  const authorBooks = booksData.length > 0 ?
-    booksData.filter(item => books[item].author === author) : [];
-
+  let authorBooks = [];
+  if (booksData.length > 0) {
+    booksData.forEach((item) => {
+      if (books[item].author === author) {
+        authorBooks.push(books[item]);
+      }
+    })
+  }
   if (authorBooks.length > 0) {
     res.send(JSON.stringify(authorBooks, null, 4))
   } else {
@@ -56,12 +74,16 @@ public_users.get('/author/:author', function (req, res) {
 // Get all books based on title
 public_users.get('/title/:title', function (req, res) {
   const title = req.params.title;
-  const booksData = Object.keys(books);
-  const bookResult = booksData.length > 0 ?
-    booksData.filter(item => books[item].title === title) : [];
-
-  if (bookResult.length > 0) {
-    res.send(JSON.stringify(bookResult, null, 4))
+  let titleBooks = [];
+  if (books.length > 0) {
+    books.forEach((item) => {
+      if (item.title == title) {
+        titleBooks.push(books[item]);
+      }
+    })
+  }
+  if (titleBooks.length > 0) {
+    res.send(JSON.stringify(titleBooks, null, 4))
   } else {
     res.send("Unable to find Books with Title");
   }
